@@ -4,13 +4,17 @@ import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
+import { fileURLToPath } from "url";
+
 import userRoute from "./routes/user.route.js";
 import messageRoute from "./routes/message.route.js";
 import { app, server } from "./SocketIO/server.js";
 
-dotenv.config();  
+dotenv.config();
 
-// middleware
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
@@ -18,26 +22,23 @@ app.use(cors());
 const PORT = process.env.PORT || 4000;
 const URI = process.env.MONGODB_URI;
 
-try {
-    mongoose.connect(URI);
-    console.log("Connected to MongoDB");
-} catch (error) {
-    console.log(error);
-}
+mongoose.connect(URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+    .then(() => console.log("Connected to MongoDB"))
+    .catch((err) => {
+        console.error("MongoDB connection error:", err.message);
+        process.exit(1);
+    });
 
-//routes
 app.use("/api/user", userRoute);
 app.use("/api/message", messageRoute);
 
-
-
-// --------------- code for deployment --------------------
-
-if (process.env.NODE_ENV === 'production') {
-    const dirPath =  path.resolve();
-    app.use(express.static("./Frontend/dist"));
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(dirPath, './Frontend/dist','index.html'));
+if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "./Frontend/dist")));
+    app.get("*", (req, res) => {
+        res.sendFile(path.join(__dirname, "./Frontend/dist/index.html"));
     });
 }
 
