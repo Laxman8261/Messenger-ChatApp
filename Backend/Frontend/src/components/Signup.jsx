@@ -22,7 +22,7 @@ function Signup() {
 
   const onSubmit = async (data) => {
     const userInfo = {
-      fullname: data.fullname,
+      username: data.username,
       email: data.email,
       password: data.password,
       confirmPassword: data.confirmPassword,
