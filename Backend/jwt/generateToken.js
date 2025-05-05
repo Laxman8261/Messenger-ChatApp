@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 
 const createTokenAndSaveCookie = (userId, res) => {
   const secret = process.env.JWT_Token;
+  console.log("JWT_SECRET from env:", process.env.JWT_TOKEN);
 
   if (!secret) {
     throw new Error("JWT_TOKEN is not defined in environment variables.");

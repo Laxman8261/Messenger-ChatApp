@@ -15,9 +15,28 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Define allowed origins
+const allowedOrigins = [
+  "http://localhost:10000", // Local development
+  "https://messenger-chatapp-4.onrender.com", // Render production
+];
+
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+
+// CORS Configuration
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // Allows cookies to be sent with requests
+  })
+);
 
 const PORT = process.env.PORT || 4000;
 const URI = process.env.MONGODB_URI;
@@ -35,6 +54,7 @@ mongoose.connect(URI, {
 app.use("/api/user", userRoute);
 app.use("/api/message", messageRoute);
 
+// Serve static files if in production
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "./Frontend/dist")));
     app.get("*", (req, res) => {
@@ -42,6 +62,7 @@ if (process.env.NODE_ENV === "production") {
     });
 }
 
+// Socket.io CORS configuration (update here if using Socket.IO with express)
 server.listen(PORT, () => {
     console.log(`Server is Running on port ${PORT}`);
 });
